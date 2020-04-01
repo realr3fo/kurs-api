@@ -42,6 +42,14 @@ class KursList(db.Model):
     def get_all():
         return KursList.query.all()
 
+    @staticmethod
+    def get_by_date_and_currency(date, currency):
+        return KursList.query.filter_by(date=date, currency=currency).first()
+
+    @staticmethod
+    def get_by_date(date):
+        return KursList.query.filter_by(date=date).all()
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
