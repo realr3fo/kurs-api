@@ -1,13 +1,13 @@
 import os
 
-from app import create_app
+from app import app
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
 config_name = os.getenv('APP_SETTINGS') # config_name = "development"
-app = create_app(config_name)
+app = app(config_name)
 
 if __name__ == '__main__':
     app.run()
