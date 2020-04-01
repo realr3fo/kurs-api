@@ -30,12 +30,16 @@ def create_app(config_name):
         if request.method == "POST":
             currency = str(request.data.get('currency', ''))
             date = str(request.data.get('date', ''))
-            erate_jual = str(request.data.get('erate_jual', ''))
-            erate_beli = str(request.data.get('erate_beli', ''))
-            tt_counter_jual = str(request.data.get('tt_counter_jual', ''))
-            tt_counter_beli = str(request.data.get('tt_counter_beli', ''))
-            bank_notes_jual = str(request.data.get('bank_notes_jual', ''))
-            bank_notes_beli = str(request.data.get('bank_notes_beli', ''))
+
+            check_existence = KursList.get_by_date_range_and_currency(date, date, currency)
+            if len(check_existence) > 0:
+                return jsonify({"message": "data sudah ada"}), 200
+            erate_jual = str(request.data.get('e_rate').get("jual"))
+            erate_beli = str(request.data.get('e_rate').get("beli"))
+            tt_counter_jual = str(request.data.get('tt_counter').get("jual"))
+            tt_counter_beli = str(request.data.get('tt_counter').get("beli"))
+            bank_notes_jual = str(request.data.get('bank_notes').get("jual"))
+            bank_notes_beli = str(request.data.get('bank_notes').get("beli"))
             if currency:
                 kurslist = KursList(currency=currency, date=date, erate_jual=erate_jual, erate_beli=erate_beli,
                                     tt_counter_jual=tt_counter_jual, tt_counter_beli=tt_counter_beli,
@@ -59,12 +63,12 @@ def create_app(config_name):
         elif request.method == "PUT":
             currency = str(request.data.get('currency', ''))
             date = str(request.data.get('date', ''))
-            erate_jual = str(request.data.get('erate_jual', ''))
-            erate_beli = str(request.data.get('erate_beli', ''))
-            tt_counter_jual = str(request.data.get('tt_counter_jual', ''))
-            tt_counter_beli = str(request.data.get('tt_counter_beli', ''))
-            bank_notes_jual = str(request.data.get('bank_notes_jual', ''))
-            bank_notes_beli = str(request.data.get('bank_notes_beli', ''))
+            erate_jual = str(request.data.get("e_rate").get("jual"))
+            erate_beli = str(request.data.get('e_rate').get("beli"))
+            tt_counter_jual = str(request.data.get('tt_counter').get("jual"))
+            tt_counter_beli = str(request.data.get('tt_counter').get("beli"))
+            bank_notes_jual = str(request.data.get('bank_notes').get("jual"))
+            bank_notes_beli = str(request.data.get('bank_notes').get("beli"))
             kurslist = KursList.get_by_date_and_currency(date, currency)
             if kurslist == None:
                 response = jsonify({})
@@ -153,7 +157,6 @@ def create_app(config_name):
 
     @app.route('/api/indexing', methods=['GET'])
     def kurslist_indexing():
-
         today = date.today()
 
         url = 'https://www.bca.co.id/id/Individu/Sarana/Kurs-dan-Suku-Bunga/Kurs-dan-Kalkulator'
@@ -167,6 +170,11 @@ def create_app(config_name):
         for elem in rows:
             each_currency = elem.select('td')
             currency_symbol = each_currency[0].text
+
+            check_existence = KursList.get_by_date_range_and_currency(today, today, currency_symbol)
+            if len(check_existence) > 0:
+                return jsonify({"message": "data already exist"}), 200
+
             erate_beli = each_currency[1].text
             erate_jual = each_currency[2].text
             tt_counter_beli = each_currency[3].text

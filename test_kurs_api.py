@@ -25,10 +25,13 @@ class KursAPITestCase(unittest.TestCase):
         self.tt_counter_beli = '16.775,00'
         self.bank_notes_jual = '16.250,00'
         self.bank_notes_beli = '16.750,00'
-        self.kurslist = {'currency': self.currency, 'date': self.date, 'erate_jual': self.erate_jual,
-                         'erate_beli': self.erate_beli, 'tt_counter_jual': self.tt_counter_jual,
-                         'tt_counter_beli': self.tt_counter_beli, 'bank_notes_jual': self.bank_notes_jual,
-                         'bank_notes_beli': self.bank_notes_beli}
+        self.kurslist = {'currency': self.currency, 'date': self.date,
+                         'e_rate': {'jual': self.erate_jual,
+                                    'beli': self.erate_beli},
+                         'tt_counter': {'jual': self.tt_counter_jual,
+                                        'beli': self.tt_counter_beli},
+                         'bank_notes': {'jual': self.bank_notes_jual,
+                                        'beli': self.bank_notes_beli}}
 
         # binds the app to the current context
         with self.app.app_context():
@@ -37,7 +40,7 @@ class KursAPITestCase(unittest.TestCase):
 
     def test_kurslist_creation(self):
         """Test API can create a kurslist (POST request)"""
-        res = self.client().post('/api/kurs', data=self.kurslist)
+        res = self.client().post('/api/kurs', data=json.dumps(self.kurslist),  content_type='application/json')
         self.assertEqual(res.status_code, 201)
         self.assertIn(self.currency, str(res.data))
         self.assertIn(self.date, str(res.data))
@@ -50,16 +53,19 @@ class KursAPITestCase(unittest.TestCase):
 
     def test_kurslist_can_be_edited(self):
         """Test API can edit an existing kurslist. (PUT request)"""
-        rv = self.client().post('/api/kurs', data=self.kurslist)
+        rv = self.client().post('/api/kurs', data=json.dumps(self.kurslist),  content_type='application/json')
         self.assertEqual(rv.status_code, 201)
         updated_num = 123
-        new_data = {'currency': 'IDR', 'date': self.date, 'erate_jual': updated_num,
-                    'erate_beli': updated_num, 'tt_counter_jual': updated_num,
-                    'tt_counter_beli': updated_num, 'bank_notes_jual': updated_num,
-                    'bank_notes_beli': updated_num}
+        new_data = {'currency': self.currency, 'date': self.date,
+                         'e_rate': {'jual': updated_num,
+                                    'beli': updated_num},
+                         'tt_counter': {'jual': updated_num,
+                                        'beli': updated_num},
+                         'bank_notes': {'jual': updated_num,
+                                        'beli': updated_num}}
         res = self.client().put(
             '/api/kurs',
-            data=new_data)
+            data=json.dumps(new_data),  content_type='application/json')
         self.assertEqual(res.status_code, 200)
         self.assertIn(self.currency, str(res.data))
         self.assertIn(self.date, str(res.data))
@@ -67,7 +73,7 @@ class KursAPITestCase(unittest.TestCase):
 
     def test_api_can_get_kurslists_by_date_range(self):
         """Test API can get a kurslist (GET request)."""
-        res = self.client().post('/api/kurs', data=self.kurslist)
+        res = self.client().post('/api/kurs', data=json.dumps(self.kurslist),  content_type='application/json')
         self.assertEqual(res.status_code, 201)
         get_url = '/api/kurs?startdate=2020-01-01&enddate=%s' % self.date
         res = self.client().get(get_url)
@@ -83,7 +89,7 @@ class KursAPITestCase(unittest.TestCase):
 
     def test_api_can_get_kurslists_by_date_range_and_symbol(self):
         """Test API can get a kurslist (GET request)."""
-        res = self.client().post('/api/kurs', data=self.kurslist)
+        res = self.client().post('/api/kurs', data=json.dumps(self.kurslist),  content_type='application/json')
         self.assertEqual(res.status_code, 201)
         get_url = '/api/kurs/IDR?startdate=2020-01-01&enddate=%s' % self.date
         res = self.client().get(get_url)
@@ -109,7 +115,7 @@ class KursAPITestCase(unittest.TestCase):
 
     def test_kurslist_deletion(self):
         """Test API can delete an existing kurslist. (DELETE request)."""
-        rv = self.client().post('/api/kurs', data=self.kurslist)
+        rv = self.client().post('/api/kurs', data=json.dumps(self.kurslist),  content_type='application/json')
         self.assertEqual(rv.status_code, 201)
         delete_url = '/api/kurs/%s' % self.date
         res = self.client().delete(delete_url)
