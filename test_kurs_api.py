@@ -3,6 +3,7 @@ import unittest
 import os
 import json
 from datetime import date
+from time import strptime
 
 from app import create_app, db
 
@@ -17,7 +18,7 @@ class KursAPITestCase(unittest.TestCase):
         today = date.today()
 
         self.currency = 'IDR'
-        self.date = today.strftime("%Y-%m-%d")
+        self.date = today.strftime("%a, %d %b %Y %H:%M:%S")
         self.erate_jual = '16.440,00'
         self.erate_beli = '16.590,00'
         self.tt_counter_jual = '16.275,00'
@@ -87,7 +88,7 @@ class KursAPITestCase(unittest.TestCase):
 
     def test_api_can_get_kurslists_by_date_range_and_symbol(self):
         """Test API can get a kurslist (GET request)."""
-        res = self.client().post('/api/kurs', data=self.kurslist)
+        res = self.client().post('/api/kurs/', data=self.kurslist)
         self.assertEqual(res.status_code, 201)
         get_url = '/api/kurs/IDR?startdate=2020-01-01&enddate=%s' % self.date
         res = self.client().get(get_url)
@@ -113,7 +114,7 @@ class KursAPITestCase(unittest.TestCase):
 
     def test_kurslist_deletion(self):
         """Test API can delete an existing kurslist. (DELETE request)."""
-        rv = self.client().post('/api/kurs', data=self.kurslist)
+        rv = self.client().post('/api/kurs/', data=self.kurslist)
         self.assertEqual(rv.status_code, 201)
         delete_url = '/api/kurs/%s' % self.date
         res = self.client().delete(delete_url)
