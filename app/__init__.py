@@ -10,21 +10,26 @@ from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 
 # local import
+import os
 from instance.config import app_config
 from flask import request, jsonify, abort
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # initialize sql-alchemy
 db = SQLAlchemy()
+app = FlaskAPI(__name__, instance_relative_config=True)
+config_name = os.getenv('APP_SETTINGS')  # config_name = "development"
+app.config.from_object(app_config[config_name])
+app.config.from_pyfile('config.py')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+
+from app.models import KursList
 
 
-def app(config_name):
-    from app.models import KursList
-    app = FlaskAPI(__name__, instance_relative_config=True)
-    app.config.from_object(app_config[config_name])
-    app.config.from_pyfile('config.py')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    db.init_app(app)
-
+def create_app():
     @app.route('/api/kurs', methods=['POST', 'PUT', 'GET'])
     def kurslists():
         if request.method == "POST":
@@ -208,3 +213,6 @@ def app(config_name):
         return response
 
     return app
+
+
+create_app()
