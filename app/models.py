@@ -50,6 +50,14 @@ class KursList(db.Model):
     def get_by_date(date):
         return KursList.query.filter_by(date=date).all()
 
+    @staticmethod
+    def get_by_date_range(start_date, end_date):
+        return KursList.query.filter(KursList.date.between(start_date, end_date)).all()
+
+    @staticmethod
+    def get_by_date_range_and_currency(start_date, end_date, currency):
+        return KursList.query.filter(KursList.date.between(start_date, end_date)).filter_by(currency=currency).all()
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()

@@ -88,21 +88,35 @@ def create_app(config_name):
                 response.status_code = 200
             return response
         else:
-            response = jsonify({})
-            response.status_code = 404
+            start_date = request.args.get('startdate')
+            end_date = request.args.get('enddate')
+            kurslist_arr = KursList.get_by_date_range(start_date, end_date)
+            result = []
+            for kurslist in kurslist_arr:
+                kurslist_obj = {'id': kurslist.id,
+                                'currency': kurslist.currency,
+                                'date': kurslist.date,
+                                'erate_jual': kurslist.erate_jual,
+                                'erate_beli': kurslist.erate_beli,
+                                'tt_counter_jual': kurslist.tt_counter_jual,
+                                'tt_counter_beli': kurslist.tt_counter_beli,
+                                'bank_notes_jual': kurslist.bank_notes_jual,
+                                'bank_notes_beli': kurslist.bank_notes_beli,
+                                'date_created': kurslist.date_created,
+                                'date_modified': kurslist.date_modified}
+                result.append(kurslist_obj)
+            response = jsonify({"data": result})
+            response.status_code = 200
             return response
 
     @app.route('/api/kurs/<string:date>', methods=['DELETE'])
     def kurslists_delete(date):
         kurslist_arr = KursList.get_by_date(date)
-        print(kurslist_arr, len(kurslist_arr))
         if len(kurslist_arr) == 0:
-            print("hello world")
             response = jsonify({})
             response.status_code = 404
             return
         for kurslist in kurslist_arr:
-            print("dbebug here")
             kurslist.delete()
         response = jsonify({"message": "kurslists deleted successfully"})
         response.status_code = 200
@@ -110,8 +124,25 @@ def create_app(config_name):
 
     @app.route('/api/kurs/<string:currency>', methods=['GET'])
     def kurslists_get(currency):
-        response = jsonify({})
-        response.status_code = 404
+        start_date = request.args.get('startdate')
+        end_date = request.args.get('enddate')
+        kurslist_arr = KursList.get_by_date_range_and_currency(start_date, end_date, currency)
+        result = []
+        for kurslist in kurslist_arr:
+            kurslist_obj = {'id': kurslist.id,
+                            'currency': kurslist.currency,
+                            'date': kurslist.date,
+                            'erate_jual': kurslist.erate_jual,
+                            'erate_beli': kurslist.erate_beli,
+                            'tt_counter_jual': kurslist.tt_counter_jual,
+                            'tt_counter_beli': kurslist.tt_counter_beli,
+                            'bank_notes_jual': kurslist.bank_notes_jual,
+                            'bank_notes_beli': kurslist.bank_notes_beli,
+                            'date_created': kurslist.date_created,
+                            'date_modified': kurslist.date_modified}
+            result.append(kurslist_obj)
+        response = jsonify({"data": result})
+        response.status_code = 200
         return response
 
     @app.route('/api/inidexing', methods=['GET'])
