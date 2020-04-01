@@ -22,10 +22,17 @@ class KursList(db.Model):
         db.DateTime, default=db.func.current_timestamp(),
         onupdate=db.func.current_timestamp())
 
-    def __init__(self, currency, date):
+    def __init__(self, currency, date, erate_jual, erate_beli, tt_counter_jual, tt_counter_beli, bank_notes_jual,
+                 bank_notes_beli):
         """initialize with name."""
         self.currency = currency
         self.date = date
+        self.erate_jual = erate_jual
+        self.erate_beli = erate_beli
+        self.tt_counter_jual = tt_counter_jual
+        self.tt_counter_beli = tt_counter_beli
+        self.bank_notes_jual = bank_notes_jual
+        self.bank_notes_beli = bank_notes_beli
 
     def save(self):
         db.session.add(self)
@@ -40,4 +47,6 @@ class KursList(db.Model):
         db.session.commit()
 
     def __repr__(self):
-        return "<KursList: {}>".format(self.name)
+        return "<KursList: {} {} {} {} {} {} {} {}>".format(self.currency, self.date, self.erate_jual, self.erate_beli,
+                                                            self.tt_counter_jual, self.tt_counter_beli,
+                                                            self.bank_notes_jual, self.bank_notes_beli)
