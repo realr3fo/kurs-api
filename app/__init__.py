@@ -1,5 +1,11 @@
 # app/__init__.py
 
+
+from datetime import date
+
+import requests
+from bs4 import BeautifulSoup
+
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
 
@@ -145,10 +151,52 @@ def create_app(config_name):
         response.status_code = 200
         return response
 
-    @app.route('/api/inidexing', methods=['GET'])
+    @app.route('/api/indexing', methods=['GET'])
     def kurslist_indexing():
-        response = jsonify({})
-        response.status_code = 404
+
+        today = date.today()
+
+        url = 'https://www.bca.co.id/id/Individu/Sarana/Kurs-dan-Suku-Bunga/Kurs-dan-Kalkulator'
+
+        r = requests.get(url)
+
+        soup = BeautifulSoup(r.content, 'html.parser')
+        rows = soup.select('tbody tr')
+        counter = 0
+        result = []
+        for elem in rows:
+            each_currency = elem.select('td')
+            currency_symbol = each_currency[0].text
+            erate_beli = each_currency[1].text
+            erate_jual = each_currency[2].text
+            tt_counter_beli = each_currency[3].text
+            tt_counter_jual = each_currency[4].text
+            bank_notes_beli = each_currency[5].text
+            bank_notes_jual = each_currency[6].text
+
+            kurslist = KursList(currency=currency_symbol, date=today, erate_jual=erate_jual, erate_beli=erate_beli,
+                                tt_counter_jual=tt_counter_jual, tt_counter_beli=tt_counter_beli,
+                                bank_notes_jual=bank_notes_jual, bank_notes_beli=bank_notes_beli)
+            kurslist.save()
+            single_kurs_objj = {
+                'id': kurslist.id,
+                'currency': kurslist.currency,
+                'date': kurslist.date,
+                'erate_jual': kurslist.erate_jual,
+                'erate_beli': kurslist.erate_beli,
+                'tt_counter_jual': kurslist.tt_counter_jual,
+                'tt_counter_beli': kurslist.tt_counter_beli,
+                'bank_notes_jual': kurslist.bank_notes_jual,
+                'bank_notes_beli': kurslist.bank_notes_beli,
+                'date_created': kurslist.date_created,
+                'date_modified': kurslist.date_modified
+            }
+            result.append(single_kurs_objj)
+            counter += 1
+            if counter == 16:
+                break
+        response = jsonify({"data": result})
+        response.status_code = 200
         return response
 
     return app
